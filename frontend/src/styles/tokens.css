@@ -1,0 +1,63 @@
+/*
+ * Design tokens — "steel thali": brushed-steel surfaces, curry-leaf ink, a turmeric accent.
+ * Text/background pairs were checked for WCAG AA contrast (see docs/10-frontend.md).
+ */
+:root {
+  /* Steel: page, plates and rims */
+  --steel-50: #f7f9f9;
+  --steel-100: #eef1f2;
+  --steel-200: #dde3e5;
+  --steel-300: #c9d1d4;
+  --steel-400: #a7b2b6;
+
+  /* Curry leaf: ink and the data colour for meters */
+  --leaf-900: #1f3b2d;
+  --leaf-700: #2b5040;
+  --leaf-600: #2f7d4f;
+  --leaf-100: #d5e8dc;
+  --leaf-50: #edf5f0;
+
+  /* Turmeric: the single accent (focus, highlights, AI badge) */
+  --turmeric-500: #e0a526;
+  --turmeric-100: #fbf1d8;
+  --turmeric-800: #8a5a00;
+
+  /* Chili: errors and destructive actions only */
+  --chili-600: #b8432f;
+  --chili-50: #fbedea;
+
+  /* Curry: the food in the thali bowls */
+  --curry-600: #a85a27;
+
+  /* Roles */
+  --bg: var(--steel-100);
+  --surface: #fbfcfc;
+  --text: var(--leaf-900);
+  --text-2: #4a5b52;
+  --text-3: #5a6a62;
+  --line: #d3dadd;
+  --line-strong: var(--steel-400);
+
+  /* Type */
+  --font-display: "Rozha One", Georgia, serif;
+  --font-body: "Hind", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* Shape and depth */
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 22px;
+  --radius-pill: 999px;
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(31, 59, 45, 0.06),
+    0 12px 32px -20px rgba(31, 59, 45, 0.3);
+
+  /* Layout */
+  --container: 1120px;
+  --gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 28px;
+  }
+}

@@ -54,3 +54,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 *.log
+
+# Local tooling
+.claude/
