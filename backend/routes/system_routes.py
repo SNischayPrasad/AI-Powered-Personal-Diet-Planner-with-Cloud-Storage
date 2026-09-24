@@ -43,6 +43,7 @@ def readiness(request: Request) -> JSONResponse:
 
 @router.get("/system/status", response_model=SystemStatus, summary="Deployment information")
 def system_status(request: Request, settings: AppSettings) -> SystemStatus:
+    planner = request.app.state.planner
     return SystemStatus(
         app_name=settings.app_name,
         version=settings.app_version,
@@ -50,6 +51,8 @@ def system_status(request: Request, settings: AppSettings) -> SystemStatus:
         database_provider=request.app.state.db.provider_name,
         storage_provider=request.app.state.storage.provider_name,
         ai_provider=settings.ai_provider,
+        ai_available=planner.ai_available,
+        ai_model=planner.provider.model if planner.ai_available else None,
         max_upload_mb=settings.max_upload_mb,
     )
 

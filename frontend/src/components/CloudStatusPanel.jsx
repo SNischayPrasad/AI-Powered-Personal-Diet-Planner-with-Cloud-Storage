@@ -11,12 +11,17 @@ const DESCRIPTIONS = {
     local: "Simulated bucket on disk",
     s3: "S3-compatible object storage",
   },
-  ai: {
-    rule_based: "Rule-based engine",
-    anthropic: "Claude API, with rule-based fallback",
-    openai_compatible: "OpenAI-compatible API, with rule-based fallback",
-  },
 };
+
+const AI_NAMES = { anthropic: "Claude API", openai_compatible: "OpenAI-compatible API" };
+
+function describeAi(status) {
+  if (status.ai_provider === "rule_based") return "Rule-based engine";
+  const name = AI_NAMES[status.ai_provider] ?? status.ai_provider;
+  return status.ai_available
+    ? `${name} (${status.ai_model}) with rule-based fallback`
+    : `${name} not configured; using the rule-based engine`;
+}
 
 function StatusRow({ icon, label, detail, state }) {
   return (
@@ -76,7 +81,7 @@ export default function CloudStatusPanel({ title = "Cloud services" }) {
           <StatusRow
             icon="sparkle"
             label="Diet planner"
-            detail={DESCRIPTIONS.ai[status.ai_provider] ?? status.ai_provider}
+            detail={describeAi(status)}
           />
         </ul>
       )}

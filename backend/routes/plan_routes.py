@@ -39,9 +39,11 @@ def generate_plan(
         request, key=f"generate:{user.id}", limit=settings.rate_limit_generate_per_minute
     )
     record = plan_service.generate_plan(
-        db, user, payload or GeneratePlanRequest(), planner=request.app.state.diet_engine
+        db, user, payload or GeneratePlanRequest(), planner=request.app.state.planner
     )
     metrics.inc("plans_generated_total", source=record.source)
+    if record.fallback_reason:
+        metrics.inc("ai_fallbacks_total", reason=record.fallback_reason)
     logger.info("Diet plan generated",
                 extra={"user_id": user.id, "plan_id": record.id, "source": record.source})
     return PlanOut.model_validate(record)

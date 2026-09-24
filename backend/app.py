@@ -17,7 +17,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 
 import backend.models.db_models  # noqa: F401  (registers the tables with SQLAlchemy)
-from ai_engine.diet_engine import RuleBasedDietEngine
+from ai_engine.llm_providers import create_llm_provider
+from ai_engine.planner import DietPlanner
 from backend.config import API_PREFIX, PROJECT_ROOT, Settings, get_settings
 from backend.routes import auth_routes, file_routes, plan_routes, profile_routes, system_routes
 from backend.utils.errors import register_exception_handlers
@@ -105,7 +106,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.storage = storage
     app.state.metrics = Metrics()
     app.state.rate_limiter = SlidingWindowRateLimiter()
-    app.state.diet_engine = RuleBasedDietEngine()
+    app.state.planner = DietPlanner(
+        create_llm_provider(
+            settings.ai_provider,
+            anthropic_api_key=settings.anthropic_api_key,
+            anthropic_model=settings.anthropic_model,
+            ai_effort=settings.ai_effort,
+            timeout=settings.ai_timeout_seconds,
+            openai_base_url=settings.openai_compat_base_url,
+            openai_api_key=settings.openai_compat_api_key,
+            openai_model=settings.openai_compat_model,
+        ),
+        ai_requested=settings.ai_provider != "rule_based",
+    )
 
     register_exception_handlers(app)
     register_request_middleware(app)

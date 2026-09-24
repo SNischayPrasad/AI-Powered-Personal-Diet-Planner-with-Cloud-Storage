@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ai_engine.diet_engine import GeneratedPlan, NoSuitableMealsError
 from ai_engine.nutrition import PlanRequest
 from ai_engine.options import ActivityLevel, Allergen, Cuisine, DietaryPreference, Goal, Sex
+from ai_engine.planner import DietPlanner
 from backend.models.db_models import DietPlan, User
 from backend.models.schemas import GeneratePlanRequest, PlanSummary, UserProfile
 from backend.utils.errors import BadRequestError, NotFoundError, UnprocessableError
@@ -72,11 +73,13 @@ def save_plan(db: Session, user_id: str, plan: GeneratedPlan) -> DietPlan:
     return record
 
 
-def generate_plan(db: Session, user: User, overrides: GeneratePlanRequest, planner) -> DietPlan:
-    """Generate a plan with ``planner`` (anything with ``generate(PlanRequest)``) and save it."""
+def generate_plan(
+    db: Session, user: User, overrides: GeneratePlanRequest, planner: DietPlanner
+) -> DietPlan:
+    """Generate a plan (AI first when enabled, rule-based fallback) and save it."""
     request = build_plan_request(user, overrides)
     try:
-        plan = planner.generate(request)
+        plan = planner.generate(request, use_ai=overrides.use_ai)
     except NoSuitableMealsError as exc:
         raise UnprocessableError(str(exc), code="no_suitable_meals") from exc
     return save_plan(db, user.id, plan)

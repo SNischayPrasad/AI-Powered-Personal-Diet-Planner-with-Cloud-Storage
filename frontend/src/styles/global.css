@@ -2099,3 +2099,44 @@ select {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ==========================================================================
+   Toggle (AI on/off for one plan)
+   ========================================================================== */
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-m);
+  background: var(--turmeric-100);
+  cursor: pointer;
+}
+
+.toggle input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--leaf-900);
+}
+
+.toggle:has(input:focus-visible) {
+  outline: 3px solid var(--turmeric-500);
+  outline-offset: 2px;
+}
+
+.toggle__text {
+  display: grid;
+  gap: 2px;
+}
+
+.toggle__label {
+  font-weight: 600;
+}
+
+.toggle__hint {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}

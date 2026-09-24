@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ai_engine.diet_engine import FoodItem, RuleBasedDietEngine
+from ai_engine.planner import DietPlanner
 from backend.app import create_app
 from tests.helpers import auth_headers, complete_profile, make_settings, register
 
@@ -184,12 +185,13 @@ def test_plan_generation_is_rate_limited_per_user(tmp_path):
 
 
 def test_restrictions_with_no_matching_dishes_return_a_helpful_422(client, token, app):
-    app.state.diet_engine = RuleBasedDietEngine(foods=[
+    breakfast_only = RuleBasedDietEngine(foods=[
         FoodItem(id="only-breakfast", name="Toast", description="Toast.", meal_types=["breakfast"],
                  diet="vegan", cuisine="international", allergens=[], portion="2 slices",
                  ingredients=["bread"], calories=160, protein_g=6, carbs_g=30, fat_g=2,
                  fiber_g=3),
     ])
+    app.state.planner = DietPlanner(None, ai_requested=False, rule_engine=breakfast_only)
 
     response = generate(client, token)
 

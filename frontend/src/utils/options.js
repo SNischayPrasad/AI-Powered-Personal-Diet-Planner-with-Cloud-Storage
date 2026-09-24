@@ -78,6 +78,8 @@ const FALLBACK_REASONS = {
   diet_violation: "the AI suggested food that breaks your diet",
   allergen_violation: "the AI suggested food containing your allergens",
   calorie_mismatch: "the AI meals missed the calorie target",
+  inconsistent_nutrition: "the AI's nutrition numbers did not add up",
+  invalid_response: "the AI provider sent an unexpected response",
   sdk_missing: "the AI client library is not installed",
 };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Alert from "../components/Alert.jsx";
 import { ChipGroup, ChoiceCards, Field } from "../components/FormControls.jsx";
@@ -7,6 +7,7 @@ import PageHeader from "../components/PageHeader.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.js";
 import { generatePlan } from "../services/planService.js";
+import { getSystemStatus } from "../services/systemService.js";
 import { ALLERGENS, CUISINES, DIETARY_PREFERENCES, GOALS, optionLabel } from "../utils/options.js";
 
 export default function GeneratePlanPage() {
@@ -18,9 +19,19 @@ export default function GeneratePlanPage() {
     goal: user.goal ?? "balanced",
     allergies: user.allergies ?? [],
     cuisine_preference: user.cuisine_preference ?? "any",
+    use_ai: true,
   }));
   const [error, setError] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [system, setSystem] = useState(null);
+
+  useEffect(() => {
+    getSystemStatus()
+      .then(setSystem)
+      .catch(() => setSystem(null));
+  }, []);
+
+  const aiConfigured = system && system.ai_provider !== "rule_based";
 
   const set = (field) => (value) => setForm((current) => ({ ...current, [field]: value }));
 
@@ -94,6 +105,23 @@ export default function GeneratePlanPage() {
               </select>
             )}
           </Field>
+          {aiConfigured && (
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={form.use_ai}
+                onChange={(event) => set("use_ai")(event.target.checked)}
+              />
+              <span className="toggle__text">
+                <span className="toggle__label">Use the AI provider</span>
+                <span className="toggle__hint">
+                  {system.ai_available
+                    ? `Model ${system.ai_model}. If it fails or its answer breaks your diet or allergy rules, the rule-based engine is used instead.`
+                    : "The AI provider isn't configured on the server, so the rule-based engine will be used."}
+                </span>
+              </span>
+            </label>
+          )}
           <div className="form-actions">
             <button
               type="submit"

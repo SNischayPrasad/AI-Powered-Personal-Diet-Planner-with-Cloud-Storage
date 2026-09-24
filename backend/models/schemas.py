@@ -153,6 +153,10 @@ class GeneratePlanRequest(BaseModel):
     goal: Goal | None = None
     allergies: list[Allergen] | None = Field(default=None, max_length=len(Allergen) * 2)
     cuisine_preference: Cuisine | None = None
+    use_ai: bool = Field(
+        default=True,
+        description="Try the configured AI provider first (falls back to the rule-based engine).",
+    )
 
 
 class NutritionSummary(BaseModel):
@@ -259,4 +263,6 @@ class SystemStatus(BaseModel):
     database_provider: str
     storage_provider: str
     ai_provider: str
+    ai_available: bool
+    ai_model: str | None = None
     max_upload_mb: float

@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     ai_provider: Literal["rule_based", "anthropic", "openai_compatible"] = "rule_based"
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-opus-5"
-    ai_effort: Literal["low", "medium", "high"] = "low"
+    ai_effort: Literal["low", "medium", "high"] | None = "low"  # blank: omit (older models)
     ai_timeout_seconds: float = Field(default=45, gt=0)
     openai_compat_base_url: str | None = None
     openai_compat_api_key: str | None = None
@@ -94,6 +94,7 @@ class Settings(BaseSettings):
         "openai_compat_api_key",
         "openai_compat_model",
         "frontend_dist_dir",
+        "ai_effort",
         mode="before",
     )
     @classmethod
