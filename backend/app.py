@@ -19,13 +19,14 @@ from sqlalchemy.exc import SQLAlchemyError
 import backend.models.db_models  # noqa: F401  (registers the tables with SQLAlchemy)
 from ai_engine.diet_engine import RuleBasedDietEngine
 from backend.config import API_PREFIX, PROJECT_ROOT, Settings, get_settings
-from backend.routes import auth_routes, plan_routes, profile_routes, system_routes
+from backend.routes import auth_routes, file_routes, plan_routes, profile_routes, system_routes
 from backend.utils.errors import register_exception_handlers
 from backend.utils.logging_config import configure_logging
 from backend.utils.metrics import Metrics
 from backend.utils.middleware import register_request_middleware
 from backend.utils.rate_limiter import SlidingWindowRateLimiter
 from cloud.database_service import DatabaseService
+from cloud.storage_service import create_storage_service
 
 logger = logging.getLogger("diet_planner.app")
 
@@ -58,6 +59,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         pool_size=settings.db_pool_size,
         max_overflow=settings.db_max_overflow,
     )
+    storage = create_storage_service(
+        settings.storage_provider,
+        bucket=settings.storage_bucket,
+        local_dir=settings.resolve_path(settings.local_storage_dir),
+        region=settings.s3_region,
+        endpoint_url=settings.s3_endpoint_url,
+        access_key_id=settings.s3_access_key_id,
+        secret_access_key=settings.s3_secret_access_key,
+        force_path_style=settings.s3_force_path_style,
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -69,11 +80,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.error("Database unavailable at startup (%s); running in degraded mode.",
                          exc.__class__.__name__)
         logger.info(
-            "%s v%s started (environment=%s, database=%s, ai=%s)",
+            "%s v%s started (environment=%s, database=%s, storage=%s, ai=%s)",
             settings.app_name,
             settings.app_version,
             settings.environment,
             database.provider_name,
+            storage.provider_name,
             settings.ai_provider,
         )
         yield
@@ -90,6 +102,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.db = database
+    app.state.storage = storage
     app.state.metrics = Metrics()
     app.state.rate_limiter = SlidingWindowRateLimiter()
     app.state.diet_engine = RuleBasedDietEngine()
@@ -112,6 +125,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_routes.router)
     app.include_router(profile_routes.router)
     app.include_router(plan_routes.router)
+    app.include_router(file_routes.router)
     return app
 
 

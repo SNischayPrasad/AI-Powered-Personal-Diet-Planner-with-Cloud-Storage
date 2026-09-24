@@ -6,9 +6,9 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Query, Request, Response, status
 
 from backend.config import API_PREFIX
-from backend.models.schemas import GeneratePlanRequest, PlanList, PlanOut
-from backend.services import export_service, plan_service
-from backend.utils.dependencies import AppMetrics, AppSettings, CurrentUser, DbSession
+from backend.models.schemas import FileOut, GeneratePlanRequest, PlanList, PlanOut
+from backend.services import export_service, file_service, plan_service
+from backend.utils.dependencies import AppMetrics, AppSettings, CurrentUser, DbSession, Storage
 from backend.utils.rate_limiter import enforce_rate_limit
 
 logger = logging.getLogger("diet_planner.plans")
@@ -71,6 +71,32 @@ def get_plan(plan_id: str, user: CurrentUser, db: DbSession) -> PlanOut:
 def delete_plan(plan_id: str, user: CurrentUser, db: DbSession) -> Response:
     plan_service.delete_user_plan(db, user.id, plan_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/plans/{plan_id}/save-to-cloud",
+    response_model=FileOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Save a copy of a plan (JSON or text) to cloud object storage",
+    responses={404: {"description": "No such plan for this user"},
+               403: {"description": "Storage quota reached"},
+               503: {"description": "Object storage unavailable"}},
+)
+def save_plan_to_cloud(
+    plan_id: str,
+    user: CurrentUser,
+    db: DbSession,
+    storage: Storage,
+    settings: AppSettings,
+    metrics: AppMetrics,
+    export_format: Annotated[Literal["json", "txt"], Query(alias="format")] = "json",
+) -> FileOut:
+    plan = PlanOut.model_validate(plan_service.get_user_plan(db, user.id, plan_id))
+    record = file_service.save_plan_export(
+        db, storage, user.id, plan, export_format, max_files=settings.max_files_per_user
+    )
+    metrics.inc("files_uploaded_total", category=record.category)
+    return FileOut.model_validate(record)
 
 
 @router.get(

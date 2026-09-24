@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     s3_secret_access_key: str | None = None
     s3_force_path_style: bool = False  # true for MinIO and Supabase Storage
     max_upload_mb: float = Field(default=4, gt=0)
+    max_files_per_user: int = Field(default=50, ge=1)  # simple quota to control storage cost
 
     # --- AI diet planner -----------------------------------------------------------------
     ai_provider: Literal["rule_based", "anthropic", "openai_compatible"] = "rule_based"

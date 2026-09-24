@@ -1,6 +1,8 @@
 """Reusable helpers for the test-suite (builders for settings, users and requests)."""
 
 import os
+import struct
+import zlib
 from uuid import uuid4
 
 from backend.config import Settings
@@ -63,6 +65,32 @@ DEMO_PROFILE = {
     "allergies": [],
     "cuisine_preference": "any",
 }
+
+
+def png_bytes(width: int = 2, height: int = 2) -> bytes:
+    """A real, valid PNG image built with the standard library (no image files needed)."""
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        body = kind + payload
+        return (struct.pack(">I", len(payload)) + body
+                + struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF))
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)  # 8-bit RGB
+    rows = b"".join(b"\x00" + b"\x2e\xa0\x5b" * width for _ in range(height))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header)
+            + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b""))
+
+
+JPEG_BYTES = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00" + b"\x00" * 64 + b"\xff\xd9"
+PDF_BYTES = b"%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\ntrailer << >>\n%%EOF\n"
+
+
+def upload(client, token: str, filename: str, data: bytes,
+           content_type: str = "application/octet-stream"):
+    return client.post(
+        "/api/upload",
+        files={"file": (filename, data, content_type)},
+        headers=auth_headers(token),
+    )
 
 
 def complete_profile(client, token: str, **overrides) -> dict:

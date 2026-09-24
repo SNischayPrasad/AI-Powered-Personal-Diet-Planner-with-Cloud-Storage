@@ -1,11 +1,17 @@
 # Local "virtual cloud" for development — requires Docker Desktop.
 #
-#   docker compose up -d postgres
+#   docker compose up -d postgres minio minio-init
 #
-# PostgreSQL here stands in for a managed cloud database (Supabase / Neon / AWS RDS).
+# PostgreSQL stands in for a managed cloud database (Supabase / Neon / AWS RDS) and MinIO for
+# S3-compatible object storage (AWS S3 / Supabase Storage / Cloudflare R2).
 # Credentials come from your .env file (see .env.example) — nothing is hard-coded.
-# Then point the API at it:
+# Then point the API at them (in .env):
 #   DATABASE_URL=postgresql://dietplanner:<POSTGRES_PASSWORD>@localhost:5432/dietplanner
+#   STORAGE_PROVIDER=s3
+#   S3_ENDPOINT_URL=http://localhost:9000
+#   S3_ACCESS_KEY_ID=<MINIO_ROOT_USER>
+#   S3_SECRET_ACCESS_KEY=<MINIO_ROOT_PASSWORD>
+#   S3_FORCE_PATH_STYLE=true
 
 services:
   postgres:
@@ -24,5 +30,39 @@ services:
       timeout: 3s
       retries: 10
 
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in your .env file}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in your .env file}
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # web console
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot job: create the private bucket the app uses (like provisioning it in the cloud).
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-diet-planner-files}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/$$STORAGE_BUCKET &&
+      mc anonymous set none local/$$STORAGE_BUCKET"
+
 volumes:
   pgdata:
+  miniodata:

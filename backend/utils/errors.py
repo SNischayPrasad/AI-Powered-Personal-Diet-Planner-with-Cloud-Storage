@@ -19,6 +19,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import exc as sa_exc
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from cloud.storage_service import StorageError
+
 logger = logging.getLogger("diet_planner.errors")
 
 
@@ -58,6 +60,12 @@ class AuthenticationError(AppError):
     def __init__(self, message: str | None = None, **kwargs: Any) -> None:
         kwargs.setdefault("headers", {"WWW-Authenticate": "Bearer"})
         super().__init__(message, **kwargs)
+
+
+class ForbiddenError(AppError):
+    status_code = 403
+    code = "forbidden"
+    message = "You are not allowed to do that."
 
 
 class NotFoundError(AppError):
@@ -165,6 +173,16 @@ def register_exception_handlers(app: FastAPI) -> None:
         return error_response(
             request, 503, "database_unavailable",
             "The cloud database is temporarily unavailable. Please try again shortly.",
+            headers={"Retry-After": "30"},
+        )
+
+    @app.exception_handler(StorageError)
+    async def handle_storage_unavailable(request: Request, exc: StorageError) -> JSONResponse:
+        logger.error("Object storage unavailable: %s", exc)
+        request.app.state.metrics.inc("dependency_errors_total", dependency="storage")
+        return error_response(
+            request, 503, "storage_unavailable",
+            "Cloud file storage is temporarily unavailable. Please try again shortly.",
             headers={"Retry-After": "30"},
         )
 

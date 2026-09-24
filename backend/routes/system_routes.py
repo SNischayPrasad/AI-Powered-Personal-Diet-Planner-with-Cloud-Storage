@@ -31,7 +31,11 @@ def health(settings: AppSettings) -> HealthResponse:
     responses={503: {"model": ReadinessResponse, "description": "A dependency is down"}},
 )
 def readiness(request: Request) -> JSONResponse:
-    checks = {"database": "ok" if request.app.state.db.health_check() else "unavailable"}
+    state = request.app.state
+    checks = {
+        "database": "ok" if state.db.health_check() else "unavailable",
+        "storage": "ok" if state.storage.health_check() else "unavailable",
+    }
     healthy = all(result == "ok" for result in checks.values())
     body = ReadinessResponse(status="ready" if healthy else "degraded", checks=checks)
     return JSONResponse(status_code=200 if healthy else 503, content=body.model_dump())
@@ -44,6 +48,7 @@ def system_status(request: Request, settings: AppSettings) -> SystemStatus:
         version=settings.app_version,
         environment=settings.environment,
         database_provider=request.app.state.db.provider_name,
+        storage_provider=request.app.state.storage.provider_name,
         ai_provider=settings.ai_provider,
         max_upload_mb=settings.max_upload_mb,
     )

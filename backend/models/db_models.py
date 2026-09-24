@@ -114,6 +114,27 @@ class DietPlan(Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
+class UserFile(Base):
+    """Metadata for a file kept in object storage. The bytes live in the bucket under
+    ``storage_path``; this row records who owns them and what they are."""
+
+    __tablename__ = "user_files"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    filename: Mapped[str] = mapped_column(String(255))  # sanitised display name only
+    storage_path: Mapped[str] = mapped_column(String(512), unique=True)  # object key
+    content_type: Mapped[str] = mapped_column(String(100))  # detected from the bytes
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    category: Mapped[str] = mapped_column(String(30))  # meal_image | document | plan_export
+    plan_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("diet_plans.id", ondelete="SET NULL"), index=True
+    )
+    uploaded_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
 class RevokedToken(Base):
     """JWT IDs that were logged out before they expired (server-side logout)."""
 

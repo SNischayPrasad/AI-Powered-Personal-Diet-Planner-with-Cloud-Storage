@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, fie
 from ai_engine.diet_engine import Meal, NutritionTotals
 from ai_engine.nutrition import NutritionTargets
 from ai_engine.options import ActivityLevel, Allergen, Cuisine, DietaryPreference, Goal, Sex
+from backend.config import API_PREFIX
 
 BCRYPT_MAX_BYTES = 72
 
@@ -204,6 +205,38 @@ class PlanList(BaseModel):
 
 
 # ---------------------------------------------------------------------------------------------
+# Cloud files
+# ---------------------------------------------------------------------------------------------
+
+
+class FileOut(BaseModel):
+    """File metadata. The storage key and bucket are internal and never exposed."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    filename: str
+    content_type: str
+    size_bytes: int
+    category: Literal["meal_image", "document", "plan_export"]
+    plan_id: str | None = None
+    uploaded_at: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def download_url(self) -> str:
+        return f"{API_PREFIX}/files/{self.id}/download"
+
+
+class FileList(BaseModel):
+    items: list[FileOut]
+    total: int
+    total_bytes: int
+    max_files: int
+    max_upload_mb: float
+
+
+# ---------------------------------------------------------------------------------------------
 # System / monitoring
 # ---------------------------------------------------------------------------------------------
 
@@ -224,5 +257,6 @@ class SystemStatus(BaseModel):
     version: str
     environment: str
     database_provider: str
+    storage_provider: str
     ai_provider: str
     max_upload_mb: float

@@ -19,6 +19,7 @@ from backend.services import auth_service
 from backend.utils.errors import AuthenticationError
 from backend.utils.metrics import Metrics
 from backend.utils.security import TokenClaims, decode_access_token
+from cloud.storage_service import StorageService
 
 
 def get_app_settings(request: Request) -> Settings:
@@ -40,9 +41,14 @@ def get_db(request: Request) -> Iterator[Session]:
         session.close()
 
 
+def get_storage(request: Request) -> StorageService:
+    return request.app.state.storage
+
+
 AppSettings = Annotated[Settings, Depends(get_app_settings)]
 AppMetrics = Annotated[Metrics, Depends(get_metrics)]
 DbSession = Annotated[Session, Depends(get_db)]
+Storage = Annotated[StorageService, Depends(get_storage)]
 
 # Adds the "Authorize" button to the Swagger UI; auto_error=False lets us return our own
 # consistent 401 error body instead of FastAPI's default 403.
