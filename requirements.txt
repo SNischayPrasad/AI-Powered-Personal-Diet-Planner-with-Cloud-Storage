@@ -1,0 +1,27 @@
+# Runtime dependencies — install with:  pip install -r requirements.txt
+# Tested with Python 3.11 and 3.13.
+
+# --- Web framework / REST API ------------------------------------------------
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9          # multipart/form-data parsing for file uploads
+
+# --- Configuration & validation ----------------------------------------------
+pydantic>=2.7,<3
+pydantic-settings>=2.3           # typed settings loaded from environment variables
+email-validator>=2.1
+
+# --- Database: SQLite locally, PostgreSQL (Supabase / Neon / AWS RDS) in cloud --
+SQLAlchemy>=2.0,<2.1
+psycopg2-binary>=2.9.9
+
+# --- Authentication ----------------------------------------------------------
+PyJWT>=2.8
+bcrypt>=4.1
+
+# --- Cloud object storage (AWS S3 / Supabase Storage / Cloudflare R2 / MinIO) ---
+boto3>=1.34
+
+# --- Optional AI providers (the rule-based engine needs none of these) --------
+anthropic>=1.0                   # Claude API (official SDK)
+httpx>=0.27                      # OpenAI-compatible APIs (Gemini, Groq, Ollama)

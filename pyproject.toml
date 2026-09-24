@@ -1,0 +1,31 @@
+# Tool configuration only — dependencies live in requirements.txt / requirements-dev.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["backend", "ai_engine", "cloud"]
+omit = ["*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["frontend", ".venv"]
+
+[tool.ruff.lint]
+# E/W: style, F: pyflakes, I: import order, B: bugbear, UP: modern syntax, S: bandit security checks
+select = ["E", "W", "F", "I", "B", "UP", "S"]
+ignore = [
+    "B008",  # FastAPI uses function calls in default arguments (Depends, File) by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests use assert statements and throwaway demo passwords by design.
+"tests/**" = ["S101", "S105", "S106"]
+"scripts/**" = ["S101"]
