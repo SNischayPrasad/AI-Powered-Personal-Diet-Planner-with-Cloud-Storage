@@ -11,7 +11,7 @@ from backend.models.schemas import (
     MessageResponse,
     RegisterRequest,
     TokenResponse,
-    UserPublic,
+    UserProfile,
 )
 from backend.services import auth_service
 from backend.utils.dependencies import (
@@ -39,7 +39,7 @@ def _token_response(user: User, settings: Settings) -> TokenResponse:
     )
     return TokenResponse(
         access_token=token.token, expires_in=token.expires_in,
-        user=UserPublic.model_validate(user),
+        user=UserProfile.model_validate(user),
     )
 
 

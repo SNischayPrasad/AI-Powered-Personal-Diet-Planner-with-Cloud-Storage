@@ -43,3 +43,25 @@ def register(client, *, email: str | None = None, name: str = "Demo User",
 
 def auth_headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+# A synthetic demo profile — not a real person.
+DEMO_PROFILE = {
+    "age": 28,
+    "sex": "female",
+    "height_cm": 165,
+    "weight_kg": 60,
+    "activity_level": "moderately_active",
+    "dietary_preference": "vegetarian",
+    "goal": "balanced",
+    "allergies": [],
+    "cuisine_preference": "any",
+}
+
+
+def complete_profile(client, token: str, **overrides) -> dict:
+    """Save a full profile for the user owning ``token`` and return the API response."""
+    payload = {**DEMO_PROFILE, **overrides}
+    response = client.put("/api/profile", json=payload, headers=auth_headers(token))
+    assert response.status_code == 200, response.text
+    return response.json()

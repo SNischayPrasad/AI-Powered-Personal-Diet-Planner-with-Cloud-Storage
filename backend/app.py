@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import backend.models.db_models  # noqa: F401  (registers the tables with SQLAlchemy)
 from backend.config import API_PREFIX, PROJECT_ROOT, Settings, get_settings
-from backend.routes import auth_routes, system_routes
+from backend.routes import auth_routes, profile_routes, system_routes
 from backend.utils.errors import register_exception_handlers
 from backend.utils.logging_config import configure_logging
 from backend.utils.metrics import Metrics
@@ -95,6 +95,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(system_routes.router)
     app.include_router(auth_routes.router)
+    app.include_router(profile_routes.router)
     return app
 
 

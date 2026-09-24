@@ -13,7 +13,7 @@ Design notes
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
@@ -52,7 +52,7 @@ class UTCDateTime(TypeDecorator):
 
 
 class User(Base):
-    """A registered (synthetic/demo) user account."""
+    """A registered (synthetic/demo) user account and their diet profile."""
 
     __tablename__ = "users"
 
@@ -60,6 +60,19 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))  # bcrypt hash, never the password
+
+    # Profile — empty until the user completes it. Option values are stored as plain strings
+    # (see ai_engine/options.py) so the schema is portable across SQLite and PostgreSQL.
+    age: Mapped[int | None] = mapped_column(Integer)
+    sex: Mapped[str | None] = mapped_column(String(20))
+    height_cm: Mapped[float | None] = mapped_column(Float)
+    weight_kg: Mapped[float | None] = mapped_column(Float)
+    activity_level: Mapped[str | None] = mapped_column(String(30))
+    dietary_preference: Mapped[str | None] = mapped_column(String(30))
+    goal: Mapped[str | None] = mapped_column(String(30))
+    allergies: Mapped[list[str]] = mapped_column(JSON, default=list)
+    cuisine_preference: Mapped[str] = mapped_column(String(20), default="any")
+
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
 
