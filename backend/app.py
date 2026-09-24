@@ -15,12 +15,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import backend.models.db_models  # noqa: F401  (registers the tables with SQLAlchemy)
 from backend.config import API_PREFIX, PROJECT_ROOT, Settings, get_settings
-from backend.routes import system_routes
+from backend.routes import auth_routes, system_routes
 from backend.utils.errors import register_exception_handlers
 from backend.utils.logging_config import configure_logging
 from backend.utils.metrics import Metrics
 from backend.utils.middleware import register_request_middleware
+from backend.utils.rate_limiter import SlidingWindowRateLimiter
 from cloud.database_service import DatabaseService
 
 logger = logging.getLogger("diet_planner.app")
@@ -75,6 +77,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.db = database
     app.state.metrics = Metrics()
+    app.state.rate_limiter = SlidingWindowRateLimiter()
 
     register_exception_handlers(app)
     register_request_middleware(app)
@@ -91,6 +94,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.include_router(system_routes.router)
+    app.include_router(auth_routes.router)
     return app
 
 

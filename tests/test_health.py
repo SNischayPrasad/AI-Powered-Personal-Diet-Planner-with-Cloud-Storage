@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from backend.app import create_app
 from backend.config import PROJECT_ROOT, Settings
 from cloud.database_service import resolve_sqlite_url
-from tests.conftest import make_settings
+from tests.helpers import make_settings
 
 
 def test_liveness_endpoint_reports_ok(client):
