@@ -10,7 +10,7 @@ from pydantic import ValidationError
 from backend.app import create_app
 from backend.config import PROJECT_ROOT, Settings
 from cloud.database_service import resolve_sqlite_url
-from tests.helpers import make_settings
+from tests.helpers import EXTERNAL_TEST_DATABASE_URL, make_settings
 
 
 def test_liveness_endpoint_reports_ok(client):
@@ -118,7 +118,7 @@ def test_metrics_endpoint_can_be_disabled(tmp_path):
 def test_system_status_describes_providers_without_exposing_secrets(client, settings):
     body = client.get("/api/system/status").json()
 
-    assert body["database_provider"] == "sqlite"
+    assert body["database_provider"] == ("postgresql" if EXTERNAL_TEST_DATABASE_URL else "sqlite")
     assert body["ai_provider"] == "rule_based"
     assert settings.jwt_secret_key not in str(body)
 

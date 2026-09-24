@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
 
 import backend.models.db_models  # noqa: F401  (registers the tables with SQLAlchemy)
 from ai_engine.diet_engine import RuleBasedDietEngine
@@ -50,11 +51,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "restarts. Set JWT_SECRET_KEY in your .env file."
         )
 
-    database = DatabaseService(settings.database_url, base_dir=PROJECT_ROOT, echo=settings.db_echo)
+    database = DatabaseService(
+        settings.database_url,
+        base_dir=PROJECT_ROOT,
+        echo=settings.db_echo,
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
+    )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        database.create_tables()
+        try:
+            database.create_tables()
+        except SQLAlchemyError as exc:
+            # Start anyway: /api/health/ready reports "degraded" and data requests get a 503
+            # until the database is reachable again (tables are then created automatically).
+            logger.error("Database unavailable at startup (%s); running in degraded mode.",
+                         exc.__class__.__name__)
         logger.info(
             "%s v%s started (environment=%s, database=%s, ai=%s)",
             settings.app_name,

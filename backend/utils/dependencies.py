@@ -31,7 +31,9 @@ def get_metrics(request: Request) -> Metrics:
 
 def get_db(request: Request) -> Iterator[Session]:
     """One database session per request; always closed (and rolled back if uncommitted)."""
-    session = request.app.state.db.session_factory()
+    database = request.app.state.db
+    database.ensure_tables()  # no-op normally; recovers after a database outage
+    session = database.session_factory()
     try:
         yield session
     finally:

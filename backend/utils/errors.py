@@ -16,6 +16,7 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy import exc as sa_exc
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger("diet_planner.errors")
@@ -152,6 +153,19 @@ def register_exception_handlers(app: FastAPI) -> None:
             message = "The requested resource was not found."
         return error_response(
             request, exc.status_code, code, message, headers=getattr(exc, "headers", None)
+        )
+
+    @app.exception_handler(sa_exc.OperationalError)
+    @app.exception_handler(sa_exc.InterfaceError)
+    @app.exception_handler(sa_exc.TimeoutError)
+    async def handle_database_unavailable(request: Request, exc: Exception) -> JSONResponse:
+        # Connection refused, timeouts, exhausted pool, database restarting…
+        logger.error("Database unavailable: %s", exc.__class__.__name__)
+        request.app.state.metrics.inc("dependency_errors_total", dependency="database")
+        return error_response(
+            request, 503, "database_unavailable",
+            "The cloud database is temporarily unavailable. Please try again shortly.",
+            headers={"Retry-After": "30"},
         )
 
     @app.exception_handler(RequestValidationError)

@@ -1,0 +1,28 @@
+# Local "virtual cloud" for development — requires Docker Desktop.
+#
+#   docker compose up -d postgres
+#
+# PostgreSQL here stands in for a managed cloud database (Supabase / Neon / AWS RDS).
+# Credentials come from your .env file (see .env.example) — nothing is hard-coded.
+# Then point the API at it:
+#   DATABASE_URL=postgresql://dietplanner:<POSTGRES_PASSWORD>@localhost:5432/dietplanner
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: dietplanner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your .env file}
+      POSTGRES_DB: dietplanner
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dietplanner -d dietplanner"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
