@@ -4,6 +4,8 @@ TC-20 (storage outage), plus saving plan exports to object storage."""
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 from backend.app import create_app
 from backend.models.db_models import UserFile
@@ -204,6 +206,26 @@ def test_tc20_storage_outage_returns_503_and_keeps_the_database_consistent(broke
     assert files["total"] == 0  # no metadata row for an object that was never stored
     assert ready.status_code == 503
     assert ready.json()["checks"]["storage"] == "unavailable"
+
+
+def test_object_is_removed_again_when_its_metadata_cannot_be_saved(client, app, token,
+                                                                   monkeypatch):
+    # The database fails *after* the bytes reached object storage. Without the compensating
+    # delete, the object would be orphaned: stored (and billed) but invisible to everyone.
+    real_commit = Session.commit
+
+    def commit_that_fails_for_new_files(session):
+        if any(isinstance(item, UserFile) for item in session.new):
+            raise OperationalError("INSERT INTO user_files", {}, Exception("database went away"))
+        return real_commit(session)
+
+    monkeypatch.setattr(Session, "commit", commit_that_fails_for_new_files)
+
+    response = upload(client, token, "meal.png", png_bytes())
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "database_unavailable"
+    assert not [path for path in app.state.storage.bucket_dir.rglob("*") if path.is_file()]
 
 
 def test_system_status_reports_the_storage_provider(client):
