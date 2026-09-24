@@ -212,7 +212,7 @@ def test_logging_out_one_session_leaves_other_sessions_valid(client):
     assert client.post("/api/logout", headers=auth_headers(second_token)).status_code == 200
 
 
-# --- Abuse protection & monitoring ----------------------------------------------------------------
+# --- Abuse protection & monitoring ---------------------------------------------------------------
 def test_login_attempts_are_rate_limited_per_client(tmp_path):
     app = create_app(make_settings(tmp_path, rate_limit_auth_per_minute=3))
     attempt = {"email": "brute@example.com", "password": "Wr0ngPassword!"}

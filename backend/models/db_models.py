@@ -13,7 +13,7 @@ Design notes
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
@@ -75,6 +75,43 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
+
+
+class DietPlan(Base):
+    """A generated diet plan. Each meal is stored as a JSON document so the table stays
+    simple while still holding rich meal details (portion, ingredients, macros, reasoning)."""
+
+    __tablename__ = "diet_plans"
+    __table_args__ = (Index("ix_diet_plans_user_created", "user_id", "created_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(160))
+    # Snapshot of the preferences used for *this* plan (the profile may change later).
+    dietary_preference: Mapped[str] = mapped_column(String(30))
+    goal: Mapped[str] = mapped_column(String(30))
+    cuisine: Mapped[str] = mapped_column(String(20))
+    allergies: Mapped[list[str]] = mapped_column(JSON, default=list)
+    calorie_target: Mapped[int] = mapped_column(Integer)
+
+    breakfast: Mapped[dict] = mapped_column(JSON)
+    lunch: Mapped[dict] = mapped_column(JSON)
+    snack: Mapped[dict] = mapped_column(JSON)
+    dinner: Mapped[dict] = mapped_column(JSON)
+    nutrition_summary: Mapped[dict] = mapped_column(JSON)  # targets, totals, macro percentages
+    hydration_tip: Mapped[str] = mapped_column(Text)
+    tips: Mapped[list[str]] = mapped_column(JSON, default=list)
+    disclaimer: Mapped[str] = mapped_column(Text)
+
+    # Provenance: which engine produced the plan, and why the AI was skipped if it was.
+    source: Mapped[str] = mapped_column(String(20))  # "ai" | "rule_based"
+    ai_provider: Mapped[str | None] = mapped_column(String(40))
+    ai_model: Mapped[str | None] = mapped_column(String(80))
+    fallback_reason: Mapped[str | None] = mapped_column(String(120))
+
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
 
 
 class RevokedToken(Base):

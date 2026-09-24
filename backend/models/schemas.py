@@ -10,6 +10,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
 
+from ai_engine.diet_engine import Meal, NutritionTotals
+from ai_engine.nutrition import NutritionTargets
 from ai_engine.options import ActivityLevel, Allergen, Cuisine, DietaryPreference, Goal, Sex
 
 BCRYPT_MAX_BYTES = 72
@@ -136,6 +138,69 @@ class ProfileUpdate(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# ---------------------------------------------------------------------------------------------
+# Diet plans
+# ---------------------------------------------------------------------------------------------
+
+
+class GeneratePlanRequest(BaseModel):
+    """Optional per-plan overrides; anything left empty comes from the saved profile."""
+
+    dietary_preference: DietaryPreference | None = None
+    goal: Goal | None = None
+    allergies: list[Allergen] | None = Field(default=None, max_length=len(Allergen) * 2)
+    cuisine_preference: Cuisine | None = None
+
+
+class NutritionSummary(BaseModel):
+    targets: NutritionTargets
+    totals: NutritionTotals
+    macro_percentages: dict[str, int]
+
+
+class PlanOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    title: str
+    created_at: datetime
+    dietary_preference: DietaryPreference
+    goal: Goal
+    cuisine: Cuisine
+    allergies: list[Allergen]
+    calorie_target: int
+    breakfast: Meal
+    lunch: Meal
+    snack: Meal
+    dinner: Meal
+    nutrition_summary: NutritionSummary
+    hydration_tip: str
+    tips: list[str]
+    source: Literal["rule_based", "ai"]
+    ai_provider: str | None = None
+    ai_model: str | None = None
+    fallback_reason: str | None = None
+    disclaimer: str
+
+
+class PlanSummary(BaseModel):
+    id: str
+    title: str
+    created_at: datetime
+    dietary_preference: DietaryPreference
+    goal: Goal
+    calorie_target: int
+    total_calories: int
+    source: Literal["rule_based", "ai"]
+
+
+class PlanList(BaseModel):
+    items: list[PlanSummary]
+    total: int
+    limit: int
+    offset: int
 
 
 # ---------------------------------------------------------------------------------------------

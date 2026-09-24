@@ -83,6 +83,12 @@ class UnsupportedMediaTypeError(AppError):
     message = "This file type is not supported."
 
 
+class UnprocessableError(AppError):
+    status_code = 422
+    code = "unprocessable"
+    message = "The request is valid but cannot be fulfilled."
+
+
 class RateLimitExceededError(AppError):
     status_code = 429
     code = "rate_limited"
