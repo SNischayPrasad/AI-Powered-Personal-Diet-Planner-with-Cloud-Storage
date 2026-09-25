@@ -1,0 +1,53 @@
+{
+  "_note": "Synthetic demo profiles only. Emails use the reserved example.com domain; passwords are never stored here (see scripts/seed_demo_data.py).",
+  "users": [
+    {
+      "name": "Asha Demo",
+      "email": "asha.demo@example.com",
+      "profile": {
+        "age": 29,
+        "sex": "female",
+        "height_cm": 162,
+        "weight_kg": 58,
+        "activity_level": "lightly_active",
+        "dietary_preference": "vegetarian",
+        "goal": "balanced",
+        "allergies": ["peanuts"],
+        "cuisine_preference": "indian"
+      },
+      "upload_images": ["breakfast-poha-bowl.png", "lunch-thali.png"]
+    },
+    {
+      "name": "Kabir Demo",
+      "email": "kabir.demo@example.com",
+      "profile": {
+        "age": 34,
+        "sex": "male",
+        "height_cm": 176,
+        "weight_kg": 84,
+        "activity_level": "sedentary",
+        "dietary_preference": "vegan",
+        "goal": "weight_management",
+        "allergies": ["gluten"],
+        "cuisine_preference": "any"
+      },
+      "upload_images": []
+    },
+    {
+      "name": "Rohan Demo",
+      "email": "rohan.demo@example.com",
+      "profile": {
+        "age": 22,
+        "sex": "male",
+        "height_cm": 180,
+        "weight_kg": 72,
+        "activity_level": "very_active",
+        "dietary_preference": "non_vegetarian",
+        "goal": "fitness",
+        "allergies": [],
+        "cuisine_preference": "international"
+      },
+      "upload_images": []
+    }
+  ]
+}

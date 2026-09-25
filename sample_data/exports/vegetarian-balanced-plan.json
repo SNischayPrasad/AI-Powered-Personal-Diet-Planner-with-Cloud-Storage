@@ -1,0 +1,158 @@
+{
+  "id": "ea7be52f-c28a-49e5-bd0d-e40a48f91f8c",
+  "title": "Vegetarian · General balanced eating · 1,770 kcal/day",
+  "created_at": "2026-09-25T13:31:13.431060Z",
+  "dietary_preference": "vegetarian",
+  "goal": "balanced",
+  "cuisine": "indian",
+  "allergies": [
+    "peanuts"
+  ],
+  "calorie_target": 1770,
+  "breakfast": {
+    "food_id": "aloo-paratha-curd",
+    "name": "Aloo Paratha with Curd",
+    "description": "Whole-wheat flatbreads stuffed with spiced potato, served with plain curd.",
+    "portion": "2 small parathas + 1 bowl curd",
+    "servings": 1.0,
+    "ingredients": [
+      "whole-wheat flour",
+      "potato",
+      "spices",
+      "curd"
+    ],
+    "calories": 460,
+    "protein_g": 13,
+    "carbs_g": 62,
+    "fat_g": 17,
+    "fiber_g": 6,
+    "diet": "vegetarian",
+    "cuisine": "indian",
+    "allergens": [
+      "dairy",
+      "gluten"
+    ],
+    "why": "Balanced mix of carbohydrates, protein and fat. Adds steady, balanced energy to your day."
+  },
+  "lunch": {
+    "food_id": "dal-roti-sabzi",
+    "name": "Dal Tadka with Rotis and Vegetable Sabzi",
+    "description": "Everyday home thali: tempered lentils, whole-wheat rotis and a dry vegetable dish.",
+    "portion": "1 bowl dal + 2 rotis + 1 bowl sabzi",
+    "servings": 1.0,
+    "ingredients": [
+      "toor dal",
+      "whole-wheat flour",
+      "seasonal vegetables",
+      "cumin",
+      "garlic"
+    ],
+    "calories": 600,
+    "protein_g": 23,
+    "carbs_g": 92,
+    "fat_g": 15,
+    "fiber_g": 15,
+    "diet": "vegan",
+    "cuisine": "indian",
+    "allergens": [
+      "gluten"
+    ],
+    "why": "Rich in fibre. Adds steady, balanced energy to your day."
+  },
+  "snack": {
+    "food_id": "makhana-chaas",
+    "name": "Roasted Makhana with Masala Chaas",
+    "description": "Light roasted fox nuts with a glass of spiced buttermilk.",
+    "portion": "1 cup makhana + 1 glass chaas",
+    "servings": 1.0,
+    "ingredients": [
+      "fox nuts (makhana)",
+      "buttermilk",
+      "roasted cumin",
+      "mint"
+    ],
+    "calories": 170,
+    "protein_g": 8,
+    "carbs_g": 24,
+    "fat_g": 5,
+    "fiber_g": 2,
+    "diet": "vegetarian",
+    "cuisine": "indian",
+    "allergens": [
+      "dairy"
+    ],
+    "why": "Balanced mix of carbohydrates, protein and fat. Adds steady, balanced energy to your day."
+  },
+  "dinner": {
+    "food_id": "paneer-bhurji-roti",
+    "name": "Paneer Bhurji with Whole-Wheat Rotis",
+    "description": "Crumbled paneer sauteed with onion, tomato and peppers, served with rotis.",
+    "portion": "1 bowl bhurji + 2 rotis",
+    "servings": 1.0,
+    "ingredients": [
+      "paneer",
+      "onion",
+      "tomato",
+      "bell pepper",
+      "whole-wheat flour"
+    ],
+    "calories": 560,
+    "protein_g": 28,
+    "carbs_g": 50,
+    "fat_g": 27,
+    "fiber_g": 8,
+    "diet": "vegetarian",
+    "cuisine": "indian",
+    "allergens": [
+      "dairy",
+      "gluten"
+    ],
+    "why": "Good source of protein. Adds steady, balanced energy to your day."
+  },
+  "nutrition_summary": {
+    "targets": {
+      "bmr": 1286,
+      "tdee": 1769,
+      "calories": 1770,
+      "protein_g": 88,
+      "carbs_g": 221,
+      "fat_g": 59,
+      "macro_split": {
+        "protein": 20,
+        "carbs": 50,
+        "fat": 30
+      },
+      "meal_calories": {
+        "breakfast": 442,
+        "lunch": 620,
+        "snack": 177,
+        "dinner": 531
+      },
+      "water_liters": 2.0
+    },
+    "totals": {
+      "calories": 1790,
+      "protein_g": 72,
+      "carbs_g": 228,
+      "fat_g": 64,
+      "fiber_g": 31
+    },
+    "macro_percentages": {
+      "protein": 16,
+      "carbs": 51,
+      "fat": 32
+    }
+  },
+  "hydration_tip": "Aim for roughly 2.0 L of fluids across the day (about 8 glasses of 250 ml), and more in hot weather or when you exercise. Water is best; unsweetened drinks such as lemon water or herbal tea also count. Individual needs vary.",
+  "tips": [
+    "Fill half your plate with vegetables or fruit at lunch and dinner.",
+    "Choose whole grains such as brown rice, millets or whole-wheat roti when you can.",
+    "Include a protein source (dal, beans, paneer, tofu, eggs, fish or chicken) in each main meal, as your diet allows.",
+    "Always check ingredient labels for your listed allergens; recipes and brands vary."
+  ],
+  "source": "rule_based",
+  "ai_provider": null,
+  "ai_model": null,
+  "fallback_reason": null,
+  "disclaimer": "Educational, general-wellness example produced by a demo application. It is not medical or clinical nutrition advice and does not diagnose, treat or prevent any condition. Consult a qualified healthcare professional or registered dietitian before changing your diet, especially if you have a medical condition, are pregnant or have food allergies."
+}

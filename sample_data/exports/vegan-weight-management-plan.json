@@ -1,0 +1,155 @@
+{
+  "id": "9e9c664a-c971-475f-9a0a-13f6ef1d44cc",
+  "title": "Vegan · Weight-management demo · 1,810 kcal/day",
+  "created_at": "2026-09-25T13:31:13.511904Z",
+  "dietary_preference": "vegan",
+  "goal": "weight_management",
+  "cuisine": "any",
+  "allergies": [
+    "gluten"
+  ],
+  "calorie_target": 1810,
+  "breakfast": {
+    "food_id": "moong-chilla",
+    "name": "Sprouted Moong Chilla with Mint Chutney",
+    "description": "Protein-rich savoury pancakes made from sprouted green gram.",
+    "portion": "3 medium chillas",
+    "servings": 1.5,
+    "ingredients": [
+      "sprouted moong beans",
+      "onion",
+      "tomato",
+      "coriander",
+      "green chilli",
+      "mint chutney"
+    ],
+    "calories": 480,
+    "protein_g": 27,
+    "carbs_g": 63,
+    "fat_g": 12,
+    "fiber_g": 14,
+    "diet": "vegan",
+    "cuisine": "indian",
+    "allergens": [],
+    "why": "Good source of protein, rich in fibre. Filling while staying within your calorie budget. Portion set to 1.5 servings to fit your breakfast budget."
+  },
+  "lunch": {
+    "food_id": "soya-chunk-curry-rice",
+    "name": "Soya Chunk Curry with Brown Rice",
+    "description": "High-protein soya chunks simmered in a spiced tomato gravy with brown rice.",
+    "portion": "1 bowl curry + 1 cup brown rice",
+    "servings": 1.25,
+    "ingredients": [
+      "soya chunks",
+      "onion",
+      "tomato",
+      "ginger",
+      "spices",
+      "brown rice"
+    ],
+    "calories": 650,
+    "protein_g": 44,
+    "carbs_g": 88,
+    "fat_g": 12,
+    "fiber_g": 15,
+    "diet": "vegan",
+    "cuisine": "indian",
+    "allergens": [
+      "soy"
+    ],
+    "why": "Good source of protein, rich in fibre, low in fat. Filling while staying within your calorie budget. Portion set to 1.25 servings to fit your lunch budget."
+  },
+  "snack": {
+    "food_id": "khaman-dhokla",
+    "name": "Steamed Khaman Dhokla",
+    "description": "Soft steamed gram-flour squares tempered with mustard seeds.",
+    "portion": "4 pieces",
+    "servings": 1.0,
+    "ingredients": [
+      "gram flour (besan)",
+      "lemon",
+      "mustard seeds",
+      "curry leaves",
+      "green chilli"
+    ],
+    "calories": 180,
+    "protein_g": 8,
+    "carbs_g": 26,
+    "fat_g": 5,
+    "fiber_g": 3,
+    "diet": "vegan",
+    "cuisine": "indian",
+    "allergens": [],
+    "why": "Balanced mix of carbohydrates, protein and fat. Filling while staying within your calorie budget."
+  },
+  "dinner": {
+    "food_id": "rajma-chawal",
+    "name": "Rajma Chawal with Cucumber Salad",
+    "description": "Kidney beans in a tomato-onion gravy with brown rice and a crunchy salad.",
+    "portion": "1 bowl rajma + 1 cup brown rice + salad",
+    "servings": 1.0,
+    "ingredients": [
+      "kidney beans",
+      "onion",
+      "tomato",
+      "brown rice",
+      "cucumber",
+      "spices"
+    ],
+    "calories": 560,
+    "protein_g": 20,
+    "carbs_g": 96,
+    "fat_g": 9,
+    "fiber_g": 16,
+    "diet": "vegan",
+    "cuisine": "indian",
+    "allergens": [],
+    "why": "Rich in fibre, low in fat. Filling while staying within your calorie budget."
+  },
+  "nutrition_summary": {
+    "targets": {
+      "bmr": 1775,
+      "tdee": 2130,
+      "calories": 1810,
+      "protein_g": 136,
+      "carbs_g": 181,
+      "fat_g": 60,
+      "macro_split": {
+        "protein": 30,
+        "carbs": 40,
+        "fat": 30
+      },
+      "meal_calories": {
+        "breakfast": 452,
+        "lunch": 634,
+        "snack": 181,
+        "dinner": 543
+      },
+      "water_liters": 2.9
+    },
+    "totals": {
+      "calories": 1870,
+      "protein_g": 99,
+      "carbs_g": 273,
+      "fat_g": 38,
+      "fiber_g": 48
+    },
+    "macro_percentages": {
+      "protein": 22,
+      "carbs": 60,
+      "fat": 19
+    }
+  },
+  "hydration_tip": "Aim for roughly 2.9 L of fluids across the day (about 12 glasses of 250 ml), and more in hot weather or when you exercise. Water is best; unsweetened drinks such as lemon water or herbal tea also count. Individual needs vary.",
+  "tips": [
+    "Eat slowly and stop when you feel comfortably full.",
+    "High-fibre foods such as vegetables, legumes and whole grains help you stay full.",
+    "Limit sugary drinks and deep-fried snacks; keep regular meal times.",
+    "Always check ingredient labels for your listed allergens; recipes and brands vary."
+  ],
+  "source": "rule_based",
+  "ai_provider": null,
+  "ai_model": null,
+  "fallback_reason": null,
+  "disclaimer": "Educational, general-wellness example produced by a demo application. It is not medical or clinical nutrition advice and does not diagnose, treat or prevent any condition. Consult a qualified healthcare professional or registered dietitian before changing your diet, especially if you have a medical condition, are pregnant or have food allergies."
+}

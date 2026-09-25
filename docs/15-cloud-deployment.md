@@ -288,7 +288,7 @@ because it is embedded in a URL.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Deploy fails: "JWT_SECRET_KEY must be … at least 32 characters" | Missing or short secret in production | Set a long random value |
-| `/api/health/ready` returns 503 with `database: false` | Wrong URL, password or SSL mode; IP allow-list | Check `DATABASE_URL`; add `?sslmode=require`; allow the host |
+| `/api/health/ready` returns 503 with `"database": "unavailable"` | Wrong URL, password or SSL mode; IP allow-list | Check `DATABASE_URL`; add `?sslmode=require`; allow the host |
 | Uploads return 503 `storage_unavailable` | Bucket missing, wrong endpoint/region, or key without write access | Create the bucket; check `S3_*` values; for Supabase/R2 set `S3_FORCE_PATH_STYLE=true` |
 | "too many connections" on the free database | Too many instances × pool size | Use the pooled URL; lower `DB_POOL_SIZE` / `DB_MAX_OVERFLOW` |
 | All users share one rate limit | Proxy IP used instead of the client IP | `TRUST_PROXY_HEADERS=true` |
