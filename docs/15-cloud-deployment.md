@@ -9,13 +9,13 @@ variables choose the database, object storage and AI provider (see
 | Frontend | Vite dev server (`:5173`) | Served by the API container (Render), or Vercel's CDN | Served by the API container, optionally behind CloudFront |
 | Backend | `uvicorn` on your machine | Render web service (Docker) or a Vercel Python function | Amazon ECS on Fargate behind an Application Load Balancer |
 | Database | SQLite file, or PostgreSQL in Docker | Neon or Supabase PostgreSQL | Amazon RDS for PostgreSQL |
-| Object storage | Folder `data/object_storage`, or MinIO in Docker | Supabase Storage or Cloudflare R2 (S3 API) | Amazon S3, private bucket |
+| Object storage | Folder `data/object_storage`, or RustFS (S3 API) in Docker | Supabase Storage or Cloudflare R2 (S3 API) | Amazon S3, private bucket |
 | Secrets | `.env` file (gitignored) | Hosting dashboard environment variables | AWS Secrets Manager plus an IAM task role |
 | Logs and metrics | Console, `/api/metrics` | Render / Vercel log viewer | CloudWatch Logs and alarms |
 | Cost | Free | Free (with limits, see below) | Free tier for 12 months on new accounts, then pay as you go |
 
 > Status: the Docker image is built, run and smoke-tested on every push by the `docker` CI job,
-> both alone and with PostgreSQL + MinIO. The Render, Vercel and AWS steps below follow each
+> both alone and with PostgreSQL + an S3-compatible server (RustFS). The Render, Vercel and AWS steps below follow each
 > provider's documented setup, but they were not run against a live account for this project.
 > Run the smoke test after your first deploy.
 
@@ -54,7 +54,7 @@ browser ──▶ │  FastAPI                                                  
 | `S3_ENDPOINT_URL` | see provider | Empty for AWS S3 |
 | `S3_REGION` | `ap-south-1` | |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | provider keys | Leave empty on AWS so the IAM role is used |
-| `S3_FORCE_PATH_STYLE` | `true` | For Supabase Storage, R2 and MinIO |
+| `S3_FORCE_PATH_STYLE` | `true` | For Supabase Storage, R2 and the Docker S3 server |
 | `TRUST_PROXY_HEADERS` | `true` | Rate limiting then sees the real client IP behind the platform proxy |
 | `LOG_FORMAT` | `json` | One JSON object per line for cloud log search |
 | `CORS_ORIGINS` | `https://your-frontend.vercel.app` | Only needed when the frontend is on another domain |
@@ -265,14 +265,14 @@ rest of the app only knows the `StorageService` interface.
 ## Run the production image locally
 
 With Docker Desktop, this starts the exact image that ships to the cloud, wired to PostgreSQL
-and MinIO:
+and RustFS (S3-compatible storage):
 
 ```bash
 docker compose --profile app up --build
 ```
 
 Then open http://localhost:8000. `.env` needs `JWT_SECRET_KEY`, `POSTGRES_PASSWORD`,
-`MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`. Use letters and digits in the Postgres password,
+`RUSTFS_ACCESS_KEY` and `RUSTFS_SECRET_KEY`. Use letters and digits in the Postgres password,
 because it is embedded in a URL.
 
 ## After every deployment

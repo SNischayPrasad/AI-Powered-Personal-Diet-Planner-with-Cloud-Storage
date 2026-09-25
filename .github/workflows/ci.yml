@@ -128,8 +128,8 @@ jobs:
       # Throwaway values for ephemeral CI containers; real deployments use their own secrets.
       JWT_SECRET_KEY: ci-docker-signing-key-not-used-anywhere-else-0123456789
       POSTGRES_PASSWORD: ciOnlyThrowaway123
-      MINIO_ROOT_USER: ci-minio
-      MINIO_ROOT_PASSWORD: ciOnlyThrowaway456
+      RUSTFS_ACCESS_KEY: ci-s3-user
+      RUSTFS_SECRET_KEY: ciOnlyThrowaway456
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -145,7 +145,7 @@ jobs:
           test "$(docker exec single id -u)" = "10001"                          # not root
           curl -sf http://localhost:8001/dashboard | grep -q '<div id="root">'   # React app
           python scripts/smoke_test.py --base-url http://localhost:8001
-      - name: Full stack with docker compose (PostgreSQL + MinIO S3)
+      - name: Full stack with docker compose (PostgreSQL + S3-compatible storage)
         run: |
           docker compose --profile app up -d
           for attempt in $(seq 1 90); do curl -sf http://localhost:8000/api/health/ready && break; sleep 2; done

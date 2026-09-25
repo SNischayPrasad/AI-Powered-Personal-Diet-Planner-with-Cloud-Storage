@@ -12,7 +12,7 @@ through GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml
 | Database portability | pytest with `TEST_DATABASE_URL` | The full suite on PostgreSQL as well as SQLite | 293 |
 | Frontend unit | Vitest | Formatting, thali geometry, API client (errors, tokens, downloads) | 31 |
 | End-to-end | [`scripts/smoke_test.py`](../scripts/smoke_test.py) | The whole user journey against a running deployment | 28 checks |
-| Deployment | CI `docker` job + `tests/test_deployment.py` | The production image runs as non-root, serves the React app and passes the smoke test alone (SQLite) and with PostgreSQL + MinIO S3 | 2 × 28 checks |
+| Deployment | CI `docker` job + `tests/test_deployment.py` | The production image runs as non-root, serves the React app and passes the smoke test alone (SQLite) and with PostgreSQL + S3-compatible storage (RustFS) | 2 × 28 checks |
 
 ## How to run
 
