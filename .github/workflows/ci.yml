@@ -119,3 +119,42 @@ jobs:
       - name: API log
         if: always()
         run: cat api.log
+
+  docker:
+    name: Docker image · full stack
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    env:
+      # Throwaway values for ephemeral CI containers; real deployments use their own secrets.
+      JWT_SECRET_KEY: ci-docker-signing-key-not-used-anywhere-else-0123456789
+      POSTGRES_PASSWORD: ciOnlyThrowaway123
+      MINIO_ROOT_USER: ci-minio
+      MINIO_ROOT_PASSWORD: ciOnlyThrowaway456
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: pip install httpx
+      - name: Build the production image
+        run: docker build -t diet-planner:ci .
+      - name: Single container (SQLite, simulated bucket) serves the app and the API
+        run: |
+          docker run -d --name single -p 8001:8000 -e JWT_SECRET_KEY diet-planner:ci
+          for attempt in $(seq 1 30); do curl -sf http://localhost:8001/api/health && break; sleep 1; done
+          test "$(docker exec single id -u)" = "10001"                          # not root
+          curl -sf http://localhost:8001/dashboard | grep -q '<div id="root">'   # React app
+          python scripts/smoke_test.py --base-url http://localhost:8001
+      - name: Full stack with docker compose (PostgreSQL + MinIO S3)
+        run: |
+          docker compose --profile app up -d
+          for attempt in $(seq 1 90); do curl -sf http://localhost:8000/api/health/ready && break; sleep 2; done
+          curl -s http://localhost:8000/api/system/status | tee status.json
+          grep -q '"database_provider":"postgresql"' status.json
+          grep -q '"storage_provider":"s3"' status.json
+          python scripts/smoke_test.py --base-url http://localhost:8000
+      - name: Container logs
+        if: always()
+        run: |
+          docker logs single || true
+          docker compose --profile app logs || true

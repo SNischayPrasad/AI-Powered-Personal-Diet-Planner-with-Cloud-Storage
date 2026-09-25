@@ -26,6 +26,7 @@ from backend.utils.logging_config import configure_logging
 from backend.utils.metrics import Metrics
 from backend.utils.middleware import register_request_middleware
 from backend.utils.rate_limiter import SlidingWindowRateLimiter
+from backend.utils.spa import mount_frontend
 from cloud.database_service import DatabaseService
 from cloud.storage_service import create_storage_service
 
@@ -139,6 +140,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(profile_routes.router)
     app.include_router(plan_routes.router)
     app.include_router(file_routes.router)
+    if settings.frontend_dist_dir:  # must come last: it catches every non-API path
+        mount_frontend(app, settings.resolve_path(settings.frontend_dist_dir))
     return app
 
 

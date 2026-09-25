@@ -5,19 +5,20 @@ through GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml
 
 | Layer | Tool | What it proves | Count |
 |---|---|---|---|
-| Unit | pytest | Nutrition maths, rule engine, AI validation, security helpers, storage adapters | part of 278 |
-| API / integration | pytest + FastAPI `TestClient` | Every endpoint through real HTTP, a real database and real object storage | part of 278 |
+| Unit | pytest | Nutrition maths, rule engine, AI validation, security helpers, storage adapters | part of 293 |
+| API / integration | pytest + FastAPI `TestClient` | Every endpoint through real HTTP, a real database and real object storage | part of 293 |
 | Cloud adapters | pytest + `moto` | The S3 code path with the real boto3 calls against an in-memory S3 | 19 |
 | AI adapters | pytest + mock HTTP transports | Claude (through the real `anthropic` SDK) and OpenAI-compatible request shapes and error mapping | 24 |
-| Database portability | pytest with `TEST_DATABASE_URL` | The full suite on PostgreSQL as well as SQLite | 278 |
+| Database portability | pytest with `TEST_DATABASE_URL` | The full suite on PostgreSQL as well as SQLite | 293 |
 | Frontend unit | Vitest | Formatting, thali geometry, API client (errors, tokens, downloads) | 31 |
 | End-to-end | [`scripts/smoke_test.py`](../scripts/smoke_test.py) | The whole user journey against a running deployment | 28 checks |
+| Deployment | CI `docker` job + `tests/test_deployment.py` | The production image runs as non-root, serves the React app and passes the smoke test alone (SQLite) and with PostgreSQL + MinIO S3 | 2 × 28 checks |
 
 ## How to run
 
 ```bash
 # Backend (from the project root, virtual environment active)
-pytest                       # all 278 tests, about 30 s
+pytest                       # all 293 tests, about a minute
 pytest --cov                 # with a coverage report
 pytest -k tc18               # a single test case family
 ruff check .                 # lint, including security checks
@@ -54,9 +55,9 @@ On Windows PowerShell, set the database variable with
 
 ## Test cases
 
-Actual results are from the run on 24 September 2026:
-- 278 passed on SQLite (Python 3.13) and 266 passed on PostgreSQL 18 before the final 12
-  tests were added.
+Actual results are from the runs on 24–25 September 2026:
+- 293 passed on SQLite (Python 3.13); the PostgreSQL job in CI runs the same suite (266 also
+  passed locally on PostgreSQL 18 before the later tests were added).
 - 31 frontend tests passed.
 - The smoke test passed 28 of 28 checks against the local stack.
 
@@ -106,3 +107,4 @@ The React app was driven in a browser against the running API.
 | Wrong password shows "Incorrect email or password." | Pass |
 | Second user opening the first user's plan ID | 404 (Pass) |
 | AI endpoint unreachable → "Rule-based engine: used because the AI provider could not be reached" | Pass |
+| Production build served by FastAPI on one port: deep link reload, fonts under the strict CSP, register → profile → plan | Pass |

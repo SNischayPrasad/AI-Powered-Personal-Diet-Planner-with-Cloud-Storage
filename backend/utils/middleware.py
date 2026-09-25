@@ -34,6 +34,13 @@ API_ONLY_HEADERS = {
     "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
     "Cache-Control": "no-store",  # responses contain private user data
 }
+# The React app (when served by this API) may only load its own scripts, styles and fonts;
+# images may also come from blob: URLs (private file previews) and data: URLs (icons).
+WEB_APP_CSP = (
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; "
+    "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+)
 
 
 def _route_label(request: Request) -> str:
@@ -47,9 +54,12 @@ def _apply_security_headers(request: Request, response: Response, *, hsts: bool)
     for name, value in BASE_SECURITY_HEADERS.items():
         response.headers.setdefault(name, value)
     path = request.url.path
-    if path.startswith("/api/") and not path.startswith(_DOCS_PATHS):
-        for name, value in API_ONLY_HEADERS.items():
-            response.headers.setdefault(name, value)
+    if path.startswith("/api/"):
+        if not path.startswith(_DOCS_PATHS):  # Swagger UI loads its own scripts
+            for name, value in API_ONLY_HEADERS.items():
+                response.headers.setdefault(name, value)
+    else:
+        response.headers.setdefault("Content-Security-Policy", WEB_APP_CSP)
     if hsts:
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
