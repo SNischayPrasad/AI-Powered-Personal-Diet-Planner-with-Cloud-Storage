@@ -1,0 +1,28 @@
+// Cloudflare Workers deployment: React frontend on Cloudflare's edge + /api proxy to the
+// FastAPI service. See docs/15-cloud-deployment.md ("Cloudflare").
+//
+//   cd cloudflare && npm install
+//   npx wrangler login          # once, opens your browser
+//   npm run deploy              # builds ../frontend and deploys → https://ai-diet-planner.<you>.workers.dev
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ai-diet-planner",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-12",
+  "workers_dev": true,
+  "assets": {
+    "directory": "../frontend/dist",
+    "binding": "ASSETS",
+    // Unknown paths such as /dashboard get index.html, so React Router can render them.
+    "not_found_handling": "single-page-application",
+    // Pages go through the Worker (to add security headers) and /api/* is proxied;
+    // fingerprinted files under /assets/* are served straight from Cloudflare's cache.
+    "run_worker_first": ["/*", "!/assets/*"]
+  },
+  "vars": {
+    // Where the FastAPI service runs (Render). Change this if Render gave your service a
+    // different address, or override per deploy: npx wrangler deploy --var API_ORIGIN:https://…
+    "API_ORIGIN": "https://ai-diet-planner.onrender.com"
+  },
+  "observability": { "enabled": true }
+}

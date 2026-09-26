@@ -156,6 +156,11 @@ class S3StorageService(StorageService):
                 signature_version="s3v4",
                 s3={"addressing_style": "path" if force_path_style else "auto"},
                 retries={"max_attempts": 3, "mode": "standard"},
+                # Newer boto3 adds CRC checksums to every upload by default; some S3-compatible
+                # stores (R2, Supabase, RustFS) reject or ignore them, so only send them when an
+                # operation requires one. AWS S3 behaves the same either way.
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
                 connect_timeout=5,
                 read_timeout=30,
             ),

@@ -6,18 +6,19 @@ variables choose the database, object storage and AI provider (see
 
 | Concern | Local simulation | Approach A: free tier | Approach B: AWS |
 |---|---|---|---|
-| Frontend | Vite dev server (`:5173`) | Served by the API container (Render), or Vercel's CDN | Served by the API container, optionally behind CloudFront |
+| Frontend | Vite dev server (`:5173`) | Cloudflare Worker + static assets (recommended), the API container on Render, or Vercel's CDN | Served by the API container, optionally behind CloudFront |
 | Backend | `uvicorn` on your machine | Render web service (Docker) or a Vercel Python function | Amazon ECS on Fargate behind an Application Load Balancer |
-| Database | SQLite file, or PostgreSQL in Docker | Neon or Supabase PostgreSQL | Amazon RDS for PostgreSQL |
-| Object storage | Folder `data/object_storage`, or RustFS (S3 API) in Docker | Supabase Storage or Cloudflare R2 (S3 API) | Amazon S3, private bucket |
+| Database | SQLite file, or PostgreSQL in Docker | Neon (recommended) or Supabase PostgreSQL | Amazon RDS for PostgreSQL |
+| Object storage | Folder `data/object_storage`, or RustFS (S3 API) in Docker | Cloudflare R2 (recommended) or Supabase Storage (S3 API) | Amazon S3, private bucket |
 | Secrets | `.env` file (gitignored) | Hosting dashboard environment variables | AWS Secrets Manager plus an IAM task role |
 | Logs and metrics | Console, `/api/metrics` | Render / Vercel log viewer | CloudWatch Logs and alarms |
 | Cost | Free | Free (with limits, see below) | Free tier for 12 months on new accounts, then pay as you go |
 
 > Status: the Docker image is built, run and smoke-tested on every push by the `docker` CI job,
-> both alone and with PostgreSQL + an S3-compatible server (RustFS). The Render, Vercel and AWS steps below follow each
-> provider's documented setup, but they were not run against a live account for this project.
-> Run the smoke test after your first deploy.
+> both alone and with PostgreSQL + an S3-compatible server (RustFS). The Cloudflare Worker is
+> unit-tested and dry-run deployed in CI, and passed the full smoke test locally in Cloudflare's
+> runtime. The live Cloudflare, Render, Vercel and AWS steps follow each provider's documented
+> setup; run the smoke test after your first deploy.
 
 ## What gets deployed
 
@@ -65,6 +66,99 @@ Never commit any of these values. Each platform stores them encrypted and inject
 time.
 
 ---
+
+## Approach A on Cloudflare (recommended free setup)
+
+```text
+browser ──HTTPS──▶ Cloudflare Worker  ai-diet-planner.<you>.workers.dev      (cloudflare/)
+                     ├─ /assets/*  → React build, served from Cloudflare's edge cache
+                     ├─ /*         → index.html (SPA) + security headers
+                     └─ /api/*     → proxied to the FastAPI service on Render ──▶ Neon PostgreSQL
+                                                                            └──▶ Cloudflare R2 bucket
+```
+
+Cloudflare is the public front door and the file store. The Python API runs on Render,
+because Cloudflare's free plan cannot run this backend: bcrypt and the PostgreSQL driver need
+native code, and Cloudflare Containers requires the paid Workers plan. Visitors only ever see
+the Cloudflare URL. Browser and API share one origin, so no CORS setup is needed.
+
+The Worker ([`cloudflare/src/index.js`](../cloudflare/src/index.js)) is tested three ways:
+- unit tests;
+- `wrangler deploy --dry-run`, both in the CI `cloudflare` job;
+- locally in Cloudflare's runtime (`wrangler dev`), where the full 28-check smoke test passed
+  through the proxy.
+
+It passes the visitor's real IP (`CF-Connecting-IP`) to the API, so rate limits stay
+per-visitor.
+
+You need free accounts at **Neon**, **Cloudflare** and **Render**, all of which can sign in
+with GitHub. Nothing here requires a paid plan. Cloudflare may ask for a payment method
+before enabling R2; the free allowance (10 GB) is not charged.
+
+### Step 1: Database (Neon)
+1. neon.tech → **New project** → name `ai-diet-planner`, region *AWS Asia Pacific
+   (Singapore)*.
+2. **Connect** → turn on **Connection pooling** → copy the connection string. It looks like
+   `postgresql://…@ep-….pooler….neon.tech/neondb?sslmode=require`.
+
+### Step 2: File storage (Cloudflare R2)
+1. Cloudflare dashboard → **R2 Object Storage** → **Create bucket** → name
+   `diet-planner-files`. Keep it private (don't enable a public URL).
+2. R2 → **Manage API tokens** → **Create API token** → permission **Object Read & Write**,
+   scoped to *this bucket only*. Copy the **Access Key ID**, the **Secret Access Key** and the
+   S3 endpoint `https://<account-id>.r2.cloudflarestorage.com`. The secret is shown only once.
+
+### Step 3: API (Render)
+1. render.com → **New** → **Blueprint** → connect GitHub → pick this repository. Render reads
+   [`render.yaml`](../render.yaml).
+2. Fill in the values it asks for:
+
+   | Variable | Value |
+   |---|---|
+   | `DATABASE_URL` | the Neon pooled string from step 1 |
+   | `S3_ENDPOINT_URL` | `https://<account-id>.r2.cloudflarestorage.com` |
+   | `S3_REGION` | `auto` |
+   | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | the R2 token from step 2 |
+   | `CORS_ORIGINS` | your Worker URL (step 4), e.g. `https://ai-diet-planner.<you>.workers.dev` |
+   | `ANTHROPIC_API_KEY` | leave empty (the rule-based engine needs no key) |
+
+3. **Apply**. When the deploy is live, note the service URL (e.g.
+   `https://ai-diet-planner.onrender.com`; Render adds a suffix if the name is taken). Check
+   `https://<render-url>/api/health/ready`: it should report `ready`.
+
+### Step 4: Frontend and front door (Cloudflare Worker)
+From the repository root:
+
+```bash
+cd cloudflare
+npm install
+npx wrangler login
+```
+
+`wrangler login` opens your browser: sign in to Cloudflare and click **Allow**.
+
+If Render's URL is not exactly `https://ai-diet-planner.onrender.com`, change `API_ORIGIN`
+in [`cloudflare/wrangler.jsonc`](../cloudflare/wrangler.jsonc). Then deploy:
+
+```bash
+npm run deploy
+```
+
+This builds the React app and uploads it with the Worker. Wrangler prints the live address,
+**`https://ai-diet-planner.<your-subdomain>.workers.dev`**. That is the link to share.
+
+### Step 5: Verify
+```bash
+python scripts/smoke_test.py --base-url https://ai-diet-planner.<your-subdomain>.workers.dev
+```
+`/api/system/status` should report `database_provider: postgresql` and
+`storage_provider: s3`. The first request after about 15 idle minutes takes 30–60 s while
+Render's free service wakes up. The Worker returns a friendly 502 if it gives up.
+
+**Automatic deploys (optional):** Cloudflare dashboard → your Worker → **Settings → Build**
+→ connect the GitHub repository. Set the root directory to `cloudflare`, the build command
+to `npm run build`, and the deploy command to `npx wrangler deploy`. Render already redeploys
+the API on every push to `main`.
 
 ## Approach A: free tier (Render + Neon/Supabase)
 

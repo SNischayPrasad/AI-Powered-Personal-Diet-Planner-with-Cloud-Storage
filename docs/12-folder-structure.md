@@ -71,6 +71,12 @@ AI-Powered-Personal-Diet-Planner-with-Cloud-Storage/
 │
 ├── api/index.py                  Vercel serverless entry point (imports backend.app:app)
 │
+├── cloudflare/                   Cloudflare Worker (the public front door)
+│   ├── wrangler.jsonc            Worker config: static assets from ../frontend/dist, SPA fallback, API_ORIGIN
+│   ├── src/index.js              serves pages with security headers; proxies /api/* to the FastAPI service
+│   ├── test/worker.test.js       unit tests (node --test)
+│   └── package.json · package-lock.json   wrangler; scripts: dev, deploy, test
+│
 ├── tests/                        297 pytest tests
 │   ├── conftest.py · helpers.py  isolated app per test (temporary SQLite + bucket, or TEST_DATABASE_URL)
 │   ├── ai_fixtures.py            canned LLM answers (valid, unsafe, malformed)

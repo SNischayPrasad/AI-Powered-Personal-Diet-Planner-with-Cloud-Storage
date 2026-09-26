@@ -173,7 +173,7 @@ readiness response, that no orphaned objects were left, and automatic recovery.
 | Backend tests / coverage | 297 / 97% |
 | Frontend tests | 31 |
 | Smoke checks | 28 |
-| CI jobs | 6 (Python 3.11 + 3.13, PostgreSQL, frontend, smoke, Docker full stack) |
+| CI jobs | 7 (Python 3.11 + 3.13, PostgreSQL, frontend, smoke, Docker full stack, Cloudflare Worker) |
 | Dishes in the dataset | 65 |
 | AI validation checks | 6; day total within ±20% |
 | Calorie floor / ceiling | 1,200 / 4,000 kcal |
